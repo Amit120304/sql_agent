@@ -37,10 +37,8 @@ export default function ChatPage() {
       }
 
       // Simulated response for testing
-      const result = await response.json();
-      const a = result.data.result;
-      const data = { response: result };
-      setMessages(prev => [...prev, { type: 'bot', content: a[2].generate_answer.answer }]);
+      const result = await response.text();
+      setMessages(prev => [...prev, { type: 'bot', content: result }]);
     } catch (error) {
       alert("An error occurred, please try again later.");
       toast({
@@ -56,7 +54,7 @@ export default function ChatPage() {
   return (
 <div className="flex h-screen w-screen flex-col bg-background overflow-hidden">
   {/* Fixed Header / App Name */}
-  <div className="fixed text-left top-0 left-0 right-0 bg-primary text-primary-foreground py-3 px-6 text-lg font-bold shadow-md z-10">
+  <div className="fixed text-left top-0 left-2 right-0 bg-primary text-primary-foreground py-3 px-6 text-lg font-bold shadow-md z-10">
     Chat Application
   </div>
   {/* Chat Messages Container */}
@@ -75,7 +73,7 @@ export default function ChatPage() {
         >
         {/* Apply Markdown for bot messages */}
         {message.type === 'bot' ? (
-          <div className = "prose prose-sm">
+          <div className="prose prose-sm text-left break-words">
           <ReactMarkdown remarkPlugins={[remarkGfm]} >
             {message.content}
           </ReactMarkdown>
