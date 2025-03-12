@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { DatabaseIcon, KeyIcon, ServerIcon, UserIcon } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -28,29 +27,29 @@ const formSchema = z.object({
   user: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
   host: z.string().min(1, 'Host is required'),
-  port: z.string().regex(/^\d+$/, 'Port must be a number'),
+  port: z.number(),
   database: z.string().min(1, 'Database name is required'),
-  databasetype: z.enum(['Postgres', 'SQLlite', 'MongoDB']),
+  databasetype: z.enum(['postgresql', 'SQLlite', 'MongoDB']),
 });
 export default function LoginForm() {
+  const [dbTypes, setDbTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       user: '',
       password: '',
       host: '',
-      port: '',
+      port: 5432,
       database: '',
-      databasetype: 'Postgres',
+      databasetype: 'postgresql',
     },
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    console.log("s");
+    // console.log("s");
     try {
       // For testing, we'll simulate an API call
       const response = await fetch('http://127.0.0.1:8000/database/createconnection ', {
@@ -60,30 +59,80 @@ export default function LoginForm() {
         },
         body: JSON.stringify(values),
       });
-console.log(response);
+// console.log(response);
       if (!response.ok) {
         throw new Error('Login failed');
       }
-console.log(values);
+// console.log(values);
       const data = await response.json();
-console.log(data);
-      // Store any necessary data in localStorage or state management
-      localStorage.setItem('userCredentials', JSON.stringify(data));//earlies values was used
-      
-      navigate('/chat');
-    } catch (error) {
-      console.log("here");
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An error occurred, please try again later.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+      if(data.statuscode === 400){
+        // Show error popup
+        alert("An error occurred, please try again later.");
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: 'Invalid credentials. Please check and try again.',
+        });
+      }
+      else{
+            // Store any necessary data in localStorage or state management
+            localStorage.setItem('userCredentials', JSON.stringify(data));//earlies values was used
+        // Show success popup
+        alert('Your credentials are verified. Redirecting to the database query page...');
+        toast({
+          variant: 'default',
+          title: 'Credentials Verified!',
+          description: 'Your credentials are verified. Redirecting to the database query page...',
+        });
+
+        // Wait for 2 seconds before navigating
+        setTimeout(() => {
+          navigate('/chat');
+        }, 2000);        
+      }
+
+
+  } catch (error) {
+  // Show error popup
+  alert("Invalid credentials. Please check and try again.");
+  toast({
+    variant: 'destructive',
+    title: 'Login Failed',
+    description: 'Invalid credentials. Please check and try again.',
+  });
+  } finally {
+  setIsLoading(false);
   }
+  }
+
+  useEffect(() => {
+    // Fetch database types from backend
+    async function fetchDatabaseTypes() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/database/databasetypes');
+        if (!response.ok) {
+          throw new Error('Failed to fetch database types');
+        }
+        const result = await response.json();
+        setDbTypes(result.data.databasetypes); // Store database types in state
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load database types.',
+        });
+      }
+    }
+
+    fetchDatabaseTypes();
+  }, []); // Runs once when the component mounts
   return (
-<div className="flex min-h-[95vh] w-full items-center justify-center">
+    <>
+    
+    <div className="fixed top-0 left-0 right-0 bg-primary text-primary-foreground py-3 px-6 text-lg font-bold shadow-md z-10">
+    Chat Application
+  </div>
+<div className=" flex w-full items-center justify-center">
   <div className="w-full max-w-md space-y-3 bg-white p-5 shadow-lg sm:rounded-lg">
     <div className="text-center">
       <h1 className="text-2xl font-semibold">Database Connection</h1>
@@ -185,17 +234,25 @@ console.log(data);
             <FormItem>
               <FormLabel>Database Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select database type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Postgres">Postgres</SelectItem>
-                  <SelectItem value="SQLlite">SQLlite</SelectItem>
-                  <SelectItem value="MongoDB">MongoDB</SelectItem>
-                </SelectContent>
-              </Select>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue placeholder="Select database type" />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {dbTypes.length > 0 ? (
+                dbTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem disabled value="loading">
+                  Loading...
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -208,6 +265,7 @@ console.log(data);
     </Form>
   </div>
 </div>
+</>
 
 
   );

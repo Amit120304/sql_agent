@@ -1,74 +1,16 @@
+/* #root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 3rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+} */
+
 #root {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
 }
-/* Add this to your CSS file */
 
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
-}
-
-.chat-log {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.chat-input {
-  padding: 1rem;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
-}
-
-/* Media queries for responsiveness */
-
-@media (max-width: 768px) {
-  .chat-container {
-    padding: 1rem;
-  }
-  .chat-log {
-    padding: 0.5rem;
-  }
-  .chat-input {
-    padding: 0.5rem;
-  }
-}
-
-
-/* Add some basic styling to the chat log and input */
-
-.chat-log div {
-  margin-bottom: 0.5rem;
-}
-
-.chat-log div:last-child {
-  margin-bottom: 0;
-}
-
-.chat-input input {
-  padding: 0.5rem;
-  border: none;
-  border-radius: 0.25rem;
-  width: 100%;
-}
-
-.chat-input button {
-  padding: 0.5rem;
-  margin-right: 1.5rem;
-  border: none;
-  border-radius: 0.25rem;
-  background-color: #4CAF50;
-  color: #fff;
-  cursor: pointer;
-}
